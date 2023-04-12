@@ -9,7 +9,7 @@
 
 この NOUN - this NOUN (near me)
 その NOUN - this NOUN (near you)
-あの NOUN - this NOUN (near neither of us)
+あの NOUN - that NOUN (near neither of us)
 どの NOUN - which NOUN? (more than three choices)
 
 この ほん は おもしろい です か - is this book interesting?
