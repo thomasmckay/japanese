@@ -1,7 +1,12 @@
 import os
 import random
+import re
 import sys
 import time
+
+
+def clean(str):
+    return re.sub(' +', ' ', str)
 
 
 class QuitException(Exception):
@@ -11,26 +16,65 @@ class QuitException(Exception):
 class Category:
     def __init__(self, name):
         self.name = name
+        self.english = "english"
+        self.japanese = "japanese"
 
     def __repr__(self):
         return self.name
 
 
-class SubjectIsComplementCategory(Category):
+class Word:
+    def __init__(self, english, japanese):
+        self.english = english
+        self.japanese = japanese
+
+
+# Examples:
+# [this] apple is red [right?]
+# is the apple red?
+#
+class SubjectIsAdjectiveCategory(Category):
     def __init__(self):
-        super().__init__("SUBJECT is COMPLEMENT")
+        super().__init__("SUBJECT is ADJECTIVE")
         self.subject = "unset"
-        self.complement = "unset"
+        self.adjective = "unset"
 
-    def populate(self, subject, complement):
+        self.format = Word(
+            "%s %s %s %s",
+            "%s %s %s %s %s"
+        )
+
+    def populate(self, subject, adjective):
         self.subject = subject
-        self.complement = complement
+        self.adjective = adjective
 
-    def e(self):
-        return f"{self.subject.english} is {self.complement.english}"
+        is_or_isnot = [
+            Word("IS", "です"),
+            Word("IS NOT", "じゃないです"),
+        ]
+        prefix = [
+            Word("THE", ""),
+            Word("THIS (NEAR ME)", "この"),
+            Word("THAT (NEAR YOU)", "その"),
+            Word("THAT (NOT NEAR)", "あの"),
+        ]
 
-    def j(self):
-        return f"{self.subject.japanese} is {self.complement.japanese}"
+        v = is_or_isnot[random.randint(0, len(is_or_isnot) - 1)]
+        p = prefix[random.randint(0, len(prefix) - 1)]
+
+        self.japanese = clean(self.format.japanese % (
+            p.japanese,
+            self.subject.japanese,
+            "は",
+            self.adjective.japanese,
+            v.japanese,
+        ))
+        self.english = clean(self.format.english % (
+            p.english,
+            self.subject.english,
+            v.english,
+            self.adjective.english,
+        ))
 
 
 class SubjectVerbAdverbCategory(Category):
@@ -40,42 +84,39 @@ class SubjectVerbAdverbCategory(Category):
         self.verb = "unset"
         self.adverb = "unset"
 
-    def populate(self, subject, complement):
+    def populate(self, subject, adjective):
         self.subject = subject
-        self.complement = complement
+        self.adjective = adjective
 
-    def e(self):
-        return f"{self.subject.english} is {self.complement.english}"
-
-    def j(self):
-        return f"{self.noun.japanese} is {self.complement.japanese}"
+        self.japanese = f"TODO"
+        self.english = f"TODO"
 
 
 class Adjective():
-    def __init__(self, japanese, english):
+    def __init__(self, english, japanese):
         self.japanese = japanese
         self.english = english
 
 
 class Noun():
-    def __init__(self, japanese, english):
+    def __init__(self, english, japanese):
         self.japanese = japanese
         self.english = english
 
 
 categories = [
-    SubjectIsComplementCategory(),
-    SubjectVerbAdverbCategory(),
+    SubjectIsAdjectiveCategory(),
+    #SubjectVerbAdverbCategory(),
 ]
 
 
 nouns = [
-    Noun("りんご", "apple"),
+    Noun("APPLE", "りんご"),
 ]
 
 
 adjectives = [
-    Adjective("あか", "red"),
+    Adjective("RED", "あかい"),
 ]
 
 
@@ -83,14 +124,6 @@ def continue_or_quit(prompt=""):
     choice = input(prompt)
     if choice == "q":
         raise QuitException("quitting")
-
-
-def print_japanese_english(verb, where=None, when=None):
-    os.system("clear")
-    print(f"{verb[1]} {where[1] if where else ''} {when.english if when else ''}")
-    continue_or_quit()
-    print(f"{verb[0]} {where[0] if where else ''} {when.japanese if when else ''}")
-    continue_or_quit()
 
 
 def main(argv):
@@ -109,15 +142,15 @@ def main(argv):
 
     while True:
         category = categories[random.randint(0, len(categories) - 1)]
-        if isinstance(category, SubjectIsComplementCategory):
+        if isinstance(category, SubjectIsAdjectiveCategory):
             print(category)
             category.populate(
                 nouns[random.randint(0, len(nouns) - 1)],
                 adjectives[random.randint(0, len(adjectives) - 1)],
             )
-            print(category.e())
+            print(category.english)
             continue_or_quit()
-            print(category.j())
+            print(category.japanese)
             continue_or_quit()
         elif isinstance(category, SubjectVerbAdverbCategory):
             print(category)
